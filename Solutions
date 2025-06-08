@@ -1,0 +1,171 @@
+create database coffe_project;
+use coffe_project;
+
+
+create table sales(sale_id int,sale_date date,product_id int,customer_id int,total int,rating int);
+create table city(city_id int,city_name varchar(50),populatior bigint,estimated bigint,city_rank int);
+create table customers(customer_id int,customer_name varchar(100),city_id int);
+create table product(product_id int,product_name varchar(100),productprice int);
+
+select * from sales;
+select * from customers;
+select * from city;
+select * from product;
+select * from sales;
+
+
+-- Easy-Medium Questions 
+-- Q1
+-- select city_name,populatior*0.25 as cusmouser,estimated from city order by 2 desc ;
+
+-- Q2
+-- select city_name,sum(s.total) as total from sales as s 
+-- join customers as c on s.customer_id=c.customer_id join city  on  city.city_id=c.city_id where year(sale_date)=2023
+-- group by city_name;
+
+-- Q3-- 
+-- select p.product_name,count(s.total) as total_order from product as p   join sales as s on p.product_id=s.product_id
+-- group by product_name ;
+
+-- Q4
+-- select c.city_name,cus.customer_name,avg(s.sale_id) as avg_sale from sales as s join customers as cus on 
+-- s.customer_id=cus.customer_id join city as c on c.city_id=cus.city_id
+-- group by city_name,customer_name order by avg_sale desc ;
+
+-- Q-5
+-- select c.city_name,c.populatior*0.25 as populaters,cus.customer_name from sales as s join customers as cus on s.customer_id=cus.customer_id
+-- join city as c on c.city_id=cus.city_id where cus.customer_id=(select count(cus.customer_id) from customers group by city_name);
+
+
+-- Medium-Questions
+
+-- Q-1
+-- select * from 
+-- (select count(s.sale_id) as sales_volumne,c.city_name,p.product_name,row_number() over(partition by city_name order by count(s.sale_id) desc)  as top_selling from sales as s join customers as cus on s.customer_id=cus.customer_id
+-- join city as c on c.city_id=cus.city_id join  product as p on p.product_id=s.product_id group by c.city_name,p.product_name) as e where  e.top_selling<4 ;
+
+-- Q-2
+-- select count(distinct cus.customer_id) as unique_name,p.product_name,city_name from sales as s join customers as cus on s.customer_id=cus.customer_id
+-- join city as c on c.city_id=cus.city_id join product as p on p.product_id=s.sale_id where p.product_id in(1,2,3,4,5,6,7,8,9,10,11,12,13,14)  group by city_name,product_name;
+
+-- Q-3
+
+-- WITH city_table
+-- AS
+-- (
+-- 	SELECT 
+-- 		ci.city_name,
+-- 		SUM(s.total) as total_revenue,
+-- 		COUNT(DISTINCT s.customer_id) as total_cx,
+-- 		ROUND(
+-- 				SUM(s.total)::numeric/
+-- 					COUNT(DISTINCT s.customer_id)::numeric
+-- 				,2) as avg_sale_pr_cx
+-- 		
+-- 	FROM sales as s
+-- 	JOIN customers as c
+-- 	ON s.customer_id = c.customer_id
+-- 	JOIN city as ci
+-- 	ON ci.city_id = c.city_id
+-- 	GROUP BY 1
+-- 	ORDER BY 2 DESC
+-- ),
+-- city_rent
+-- AS
+-- (SELECT 
+-- 	city_name, 
+-- 	estimated_rent
+-- FROM city
+-- )
+-- SELECT 
+-- 	cr.city_name,
+-- 	cr.estimated_rent,
+-- 	ct.total_cx,
+-- 	ct.avg_sale_pr_cx,
+-- 	ROUND(
+-- 		cr.estimated_rent::numeric/
+-- 									ct.total_cx::numeric
+-- 		, 2) as avg_rent_per_cx
+-- FROM city_rent as cr
+-- JOIN city_table as ct
+-- ON cr.city_name = ct.city_name
+-- ORDER BY 4 DESC
+
+
+-- Advanced-Questions
+
+-- Q-1
+-- select c.city_name,count(cus.customer_id),avg(s.sale_id) as higest_sale ,c.populatior*0.25 as estimated_population 
+-- from sales as s join customers as cus on s.customer_id=cus.customer_id 
+-- join city as c on c.city_id=cus.city_id join product as p on s.product_id=p.product_id
+-- where p.product_name  like "Coffee%" 
+-- group by city_name,estimated_population limit 3 offset 2;
+
+-- Q-2
+-- WITH city_table
+-- AS
+-- (
+-- 	SELECT 
+-- 		ci.city_name,
+-- 		SUM(s.total) as total_revenue,
+-- 		COUNT(DISTINCT s.customer_id) as total_cx,
+-- 		ROUND(
+-- 				SUM(s.total)::numeric/
+-- 					COUNT(DISTINCT s.customer_id)::numeric
+-- 				,2) as avg_sale_pr_cx
+-- 		
+-- 	FROM sales as s
+-- 	JOIN customers as c
+-- 	ON s.customer_id = c.customer_id
+-- 	JOIN city as ci
+-- 	ON ci.city_id = c.city_id
+-- 	GROUP BY 1
+-- 	ORDER BY 2 DESC
+-- ),
+-- city_rent
+-- AS
+-- (
+-- 	SELECT 
+-- 		city_name, 
+-- 		estimated_rent,
+-- 		ROUND((population * 0.25)/1000000, 3) as estimated_coffee_consumer_in_millions
+-- 	FROM city
+-- )
+-- SELECT 
+-- 	cr.city_name,
+-- 	total_revenue,
+-- 	cr.estimated_rent as total_rent,
+-- 	ct.total_cx,
+-- 	estimated_coffee_consumer_in_millions,
+-- 	ct.avg_sale_pr_cx,
+-- 	ROUND(
+-- 		cr.estimated_rent::numeric/
+-- 									ct.total_cx::numeric
+-- 		, 2) as avg_rent_per_cx
+-- FROM city_rent as cr
+-- JOIN city_table as ct
+-- ON cr.city_name = ct.city_name
+-- ORDER BY 2 DESC
+
+
+
+
+
+
+select * from sales;
+select * from customers;
+select * from city;
+
+
+
+select * from
+(select c.city_name,max(s.sale_id),sum(s.total) over(partition by c.city_id ) as higest_sale from sales as s join customers as cus on
+s.customer_id=cus.customer_id join city as c on c.city_id=cus.city_id group by c.city_name ) as join_table;
+
+
+
+
+
+
+
+
